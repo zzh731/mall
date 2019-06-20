@@ -75,12 +75,58 @@ public class UserController {
 
     /**
      * 检验问题答案是否正确
-     * 需要token
+     * 需要token,存在本地缓存
      */
-    @RequestMapping(value = "",)
+    @RequestMapping(value = "forget_check_answer.do", method = RequestMethod.GET)
     @ResponseBody
     public ServerResponse<String> forgetPasswordCheckAnswer(String username, String question, String answer) {
-
+        return iUserService.checkAnswer(username, question, answer);
     }
+
+    /**
+     * 密码重置
+     * 需要先检查token与缓存中的token是否一致
+     */
+    @RequestMapping(value = "forget_reset_password.do", method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String> forgetPasswordResetPassword(String username, String passwordNew, String token) {
+        return iUserService.resetPasswordAsForget(username, passwordNew, token);
+    }
+
+    /**
+     *登陆状态下，用旧密码重置新密码
+     */
+    @RequestMapping
+    @ResponseBody
+    public ServerResponse<String> resetPassword(HttpSession session, String passwordOld, String passwordNew) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorMessage("用户未登陆");
+        }
+        return iUserService.resetPasswordUseOldPassword(passwordOld, passwordNew, user);
+    }
+
+    /**
+     * 更新个人用户信息
+     * 返回更新后的用户信息
+     *
+     */
+    @RequestMapping(value = "update_infomation.do", method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<User> updateUserInfomation(HttpSession session, User user) {
+        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+        if (currentUser == null) {
+            return ServerResponse.createBySuccessMessage("用户未登陆");
+        }
+        user.setId(currentUser.getId());
+        user.setUsername(currentUser.getUsername());
+        ServerResponse<User> response = iUserService.updateUserInfomation(user);
+        if(response.isSuccess()) {
+            response.getData().setUsername(currentUser.getUsername());//TODO ??
+            session.setAttribute(Const.CURRENT_USER, user);
+        }
+        return response;
+    }
+
 
 }
