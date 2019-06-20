@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import javax.rmi.CORBA.Util;
 import java.util.UUID;
 
-@Service("iUserService")//名字是接口名首字母小写，即可在controller中注入
-//@Service//TODO 不写名字能否注入？
+//@Service("iUserService")//名字是接口名首字母小写，即可在controller中注入.不写名字也能注入
+@Service
 public class UserSerivceImpl implements IUserService {
 
     @Autowired
@@ -89,6 +89,9 @@ public class UserSerivceImpl implements IUserService {
                 if (resultCount > 0) {
                     return ServerResponse.createByErrorMessage("email已存在");
                 }
+            } else {
+                //type非法
+                return ServerResponse.createByErrorMessage("参数错误");
             }
         } else {
             //type为空
@@ -111,7 +114,7 @@ public class UserSerivceImpl implements IUserService {
             return ServerResponse.createBySuccess(question);
         }
         //密码找回问题为空
-        return ServerResponse.createByErrorMessage("密码找回问题为空");
+        return ServerResponse.createByErrorMessage("该用户未设置找回密码问题");
     }
 
     @Override
@@ -146,6 +149,9 @@ public class UserSerivceImpl implements IUserService {
         }
         if (StringUtils.equals(token, tokenGet)) {
             //token验证通过，正式重置密码
+            //先作废此token
+            TokenCache.setKey(TokenCache.TOKEN_PREFIX + username, UUID.randomUUID().toString());
+
             String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
             int rowCount = userMapper.updatePasswordByUsername(username, md5Password);
             if (rowCount > 0) {
@@ -155,7 +161,7 @@ public class UserSerivceImpl implements IUserService {
             }
         } else {
             //token 验证不通过
-            return ServerResponse.createByErrorMessage("token无效或过期，请重试");
+            return ServerResponse.createByErrorMessage("token错误");
         }
     }
 
@@ -184,7 +190,7 @@ public class UserSerivceImpl implements IUserService {
      * email不能和别人的重复
      */
     @Override
-    public ServerResponse<User> updateUserInfomation(User user) {
+    public ServerResponse<User> updateUserInformation(User user) {
         int resultCount = userMapper.checkEmailValidByUserId(user.getEmail(), user.getId());
         if (resultCount > 0) {
             //查到了其他用户已经使用了这个email
@@ -202,5 +208,18 @@ public class UserSerivceImpl implements IUserService {
             return ServerResponse.createBySuccess("更新个人信息成功", updateUser);
         }
         return ServerResponse.createByErrorMessage("更新个人信息失败");
+    }
+
+    /**
+     * 根据userId查user
+     */
+    @Override
+    public ServerResponse<User> getUserInformation(Integer userId) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null) {
+            return ServerResponse.createByErrorMessage("找不到当前用户");
+        }
+        user.setPassword(StringUtils.EMPTY);
+        return ServerResponse.createBySuccess(user);
     }
 }

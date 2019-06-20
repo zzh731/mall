@@ -11,10 +11,11 @@
     </appender>
 
     <appender name="mall" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>G:/02tempFiles/mall.log</File>
-        <!--<File>/developer/apache-tomcat-7.0.73/logs/mmall.log</File>-->
+        <!--<File>G:/02tempFiles/logs/mall.log</File>-->
+        <File>/home/zzh/tmp_files/logs/mmall.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>G:/02tempFiles/mmall.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!--<fileNamePattern>G:/02tempFiles/logs/mmall.log.%d{yyyy-MM-dd}.gz</fileNamePattern>-->
+            <fileNamePattern>/home/zzh/tmp_files/logs/mmall.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
             <append>true</append>
             <maxHistory>10</maxHistory>
         </rollingPolicy>
@@ -25,11 +26,11 @@
 
 
     <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>G:/02tempFiles/error.log</File>
-        <!--<File>/developer/apache-tomcat-7.0.73/logs/error.log</File>-->
+        <!--<File>G:/02tempFiles/logs/error.log</File>-->
+        <File>/home/zzh/tmp_files/logs/error.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--<fileNamePattern>/devsoft/apache-tomcat-7.0.73/logs/error.log.%d{yyyy-MM-dd}.gz</fileNamePattern>-->
-            <fileNamePattern>G:/02tempFiles/error.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <fileNamePattern>/home/zzh/tmp_files/logs/error.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
             <append>true</append>
             <maxHistory>10</maxHistory>
         </rollingPolicy>
