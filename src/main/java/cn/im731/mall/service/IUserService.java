@@ -2,9 +2,11 @@ package cn.im731.mall.service;
 
 import cn.im731.mall.common.ServerResponse;
 import cn.im731.mall.pojo.User;
+import cn.im731.mall.vo.ProductDetailVo;
 
 public interface IUserService {
 
+    //后台部分
     ServerResponse<User> login(String username, String password);
 
     ServerResponse<String> register(User user);
@@ -24,4 +26,7 @@ public interface IUserService {
     ServerResponse<User> getUserInformation(Integer userId);
 
     ServerResponse<String> checkAdminRole(User user);
+
+    //前台部分
+
 }
