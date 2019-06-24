@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.rmi.CORBA.Util;
 import java.util.UUID;
 
 //@Service("iUserService")//名字是接口名首字母小写，即可在controller中注入.不写名字也能注入
@@ -221,5 +220,15 @@ public class UserSerivceImpl implements IUserService {
         }
         user.setPassword(StringUtils.EMPTY);
         return ServerResponse.createBySuccess(user);
+    }
+
+    @Override
+    public ServerResponse<String> checkAdminRole(User user) {
+        if (user != null && user.getRole().intValue() == Const.Role.ROLE_ADMIN) {
+            return ServerResponse.createBySuccess();
+        } else {
+            return ServerResponse.createByError();
+        }
+
     }
 }
