@@ -50,5 +50,47 @@ public class Const {
         }
     }
 
+    public enum OrderStatusEnum {
+        NO_PAY("未付款", 0),
+        ;
+
+        private String value;
+        private int code;
+
+        OrderStatusEnum(String value, int code) {
+            this.value = value;
+            this.code = code;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }
+
+    public enum PaymentTypeEnum {
+
+        ONLINE_PAY("在线支付", 1);
+
+        private String value;
+        private int code;
+
+        PaymentTypeEnum(String value, int code) {
+            this.value = value;
+            this.code = code;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public int getCode() {
+            return code;
+        }
+    }
+
 
 }
