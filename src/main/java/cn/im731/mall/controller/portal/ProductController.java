@@ -29,11 +29,6 @@ public class ProductController {
 
     /**
      * 根据关键词查类目
-     * @param keyword
-     * @param categoryId
-     * @param pageNum
-     * @param pageSize
-     * @return
      */
     @RequestMapping(value = "list.do", method = RequestMethod.POST)
     @ResponseBody

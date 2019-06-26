@@ -103,7 +103,10 @@ public class ProductServiceImpl implements IProductService {
     }
 
     private ProductDetailVo assembleProductDetailVo(Product product) {
-        ProductDetailVo productDetailVo = new ProductDetailVo(product.getId(), product.getCategoryId(), product.getName(), product.getSubtitle(), product.getMainImage(), product.getSubImages(), product.getDetail(), product.getPrice(), product.getStock(), product.getStatus());
+        ProductDetailVo productDetailVo = new ProductDetailVo(product.getId(),
+                product.getCategoryId(), product.getName(), product.getSubtitle(),
+                product.getMainImage(), product.getSubImages(), product.getDetail(),
+                product.getPrice(), product.getStock(), product.getStatus());
 
         //imageHost
         productDetailVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.im731.cn/"));
@@ -129,6 +132,7 @@ public class ProductServiceImpl implements IProductService {
     public ServerResponse getProductList(int pageNum, int pageSize) {
         //startPage
         PageHelper.startPage(pageNum, pageSize);
+
         List<Product> productList = productMapper.selectList();
         List<ProductListVo> productListVoList = new ArrayList<>();
 
@@ -137,6 +141,7 @@ public class ProductServiceImpl implements IProductService {
             productListVoList.add(assembleProductListVo(p));
         }
 
+        //PageInfo
         PageInfo pageResult = new PageInfo(productList);
         pageResult.setList(productListVoList);
 
@@ -151,6 +156,7 @@ public class ProductServiceImpl implements IProductService {
 
     public ServerResponse<PageInfo> searchProduct(String productName, Integer productId, int pageNum, int pageSize) {
         PageHelper.startPage(pageNum, pageSize);
+
         if (StringUtils.isNotBlank(productName)) {
             productName = new StringBuilder().append("%").append(productName).append("%").toString();
         }
