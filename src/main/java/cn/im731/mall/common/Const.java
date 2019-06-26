@@ -51,7 +51,12 @@ public class Const {
     }
 
     public enum OrderStatusEnum {
-        NO_PAY("未付款", 0),
+        CANCELED("已取消", 0),
+        NO_PAY("未付款", 10),
+        PAID("已付款", 20),
+        SHIPPED("已发货", 40),
+        ORDER_SUCCESS("订单完成", 50),
+        ORDER_CLOSE("订单关闭", 60)
         ;
 
         private String value;
@@ -60,6 +65,14 @@ public class Const {
         OrderStatusEnum(String value, int code) {
             this.value = value;
             this.code = code;
+        }
+        public static OrderStatusEnum codeOf(int code) {
+            for (OrderStatusEnum orderStatusEnum : values()) {
+                if (orderStatusEnum.code == code) {
+                    return orderStatusEnum;
+                }
+            }
+            throw new RuntimeException("没有找到对应的支付状态码："+code);
         }
 
         public String getValue() {
@@ -81,6 +94,15 @@ public class Const {
         PaymentTypeEnum(String value, int code) {
             this.value = value;
             this.code = code;
+        }
+
+        public static PaymentTypeEnum codeOf(int code) {
+            for (PaymentTypeEnum paymentTypeEnum : values()) {
+                if (paymentTypeEnum.code == code) {
+                    return paymentTypeEnum;
+                }
+            }
+            throw new RuntimeException("没有找到对应的支付状态码："+code);
         }
 
         public String getValue() {
