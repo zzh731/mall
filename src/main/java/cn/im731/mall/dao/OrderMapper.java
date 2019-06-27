@@ -15,6 +15,8 @@ public interface OrderMapper {
 
     Order selectByPrimaryKey(Integer id);
 
+    Order selectByOrderNo(Long OrderNo);
+
     Order selectByUserIdAndOrderNo(@Param("userId") Integer userId, @Param("orderNo") Long orderNo);
 
     int updateByPrimaryKeySelective(Order record);
@@ -23,5 +25,8 @@ public interface OrderMapper {
 
     int batchInsert(@Param("orderItemList")List<OrderItem> orderItemList);
 
+    List<Order> selectByUserId(Integer userId);
+
+    List<Order> selectAll();
 
 }

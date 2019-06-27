@@ -3,6 +3,10 @@ package cn.im731.mall.vo;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 点击购买，提交订单前显示
+ * 用于确认要购买的商品
+ */
 public class OrderProductVo {
     private List<OrderItemVo> orderItemVoList;
     private BigDecimal productTotalPrice;

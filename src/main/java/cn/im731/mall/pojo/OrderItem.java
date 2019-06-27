@@ -3,6 +3,9 @@ package cn.im731.mall.pojo;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 订单中每种商品保存为一个OrderItem
+ */
 public class OrderItem {
     private Integer id;
 

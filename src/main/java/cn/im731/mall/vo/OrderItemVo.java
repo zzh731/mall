@@ -1,10 +1,10 @@
 package cn.im731.mall.vo;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
- * 明细
+ * 为订单中每种商品生成一个VO
+ * Date -> String
  */
 public class OrderItemVo {
 

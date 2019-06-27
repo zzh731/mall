@@ -2,10 +2,7 @@ package cn.im731.mall.service.impl;
 
 import cn.im731.mall.common.Const;
 import cn.im731.mall.common.ServerResponse;
-import cn.im731.mall.dao.CartMapper;
-import cn.im731.mall.dao.OrderMapper;
-import cn.im731.mall.dao.ProductMapper;
-import cn.im731.mall.dao.ShippingMapper;
+import cn.im731.mall.dao.*;
 import cn.im731.mall.pojo.*;
 import cn.im731.mall.service.IOrderService;
 import cn.im731.mall.util.BigDecimalUtil;
@@ -15,15 +12,15 @@ import cn.im731.mall.vo.OrderItemVo;
 import cn.im731.mall.vo.OrderProductVo;
 import cn.im731.mall.vo.OrderVo;
 import cn.im731.mall.vo.ShippingVo;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements IOrderService {
@@ -39,6 +36,14 @@ public class OrderServiceImpl implements IOrderService {
 
     @Autowired
     private ShippingMapper shippingMapper;
+
+    @Autowired
+    private OrderItemMapper orderItemMapper;
+
+    /**
+     * 用户侧
+     */
+
 
     public ServerResponse createOrder(Integer userId, Integer shippingId) {
         //先选出购物车中勾选的商品
@@ -90,6 +95,7 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     /**
+     * Order + List<OrderItem> -> OrderVo
      * 返回订单信息、订单明细信息、收货地址信息
      */
     private OrderVo assembleOrderVo(Order order, List<OrderItem> orderItemList) {
@@ -135,7 +141,8 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     /**
-     *  组装订单商品列表的VO
+     * OrderItem -> OrderItemVo
+     * 组装订单商品列表的VO
      */
     private OrderItemVo assembleOrderItemVo(OrderItem orderItem) {
         OrderItemVo orderItemVo = new OrderItemVo();
@@ -154,6 +161,7 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     /**
+     * Shipping -> ShippingVo
      * 组装收货地址的VO
      */
     private ShippingVo assembleShippingVo(Shipping shipping) {
@@ -328,4 +336,140 @@ public class OrderServiceImpl implements IOrderService {
 
         return ServerResponse.createBySuccess(orderProductVo);
     }
+
+    /**
+     * 用户查看订单详情
+     * 返回一个OrderVo
+     */
+    public ServerResponse<OrderVo> getOrderDetail(Integer userId, Long orderNo) {
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
+        if (order == null) {
+            return ServerResponse.createByErrorMessage("无此订单");
+        }
+        //组装OrderVo
+        List<OrderItem> orderItemList = orderItemMapper.getByOrderNoAndUserId(orderNo, userId);
+        OrderVo orderVo = assembleOrderVo(order, orderItemList);
+        return ServerResponse.createBySuccess(orderVo);
+    }
+
+    /**
+     * 用户查看订单列表
+     * 要分页
+     */
+    public ServerResponse<PageInfo> getOrderList(Integer userId, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+
+        List<Order> orderList = orderMapper.selectByUserId(userId);
+        List<OrderVo> orderVoList = assembleOrderVoList(orderList, userId);
+
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    /**
+     * 管理员查看所有用户所有订单
+     * 要分页
+     */
+
+    /**
+     * List<Order> -> List<OrderVo>
+     * 生成订单列表VO
+     * 复用的方法，如果是管理员查，userId为空。
+     */
+    public List<OrderVo> assembleOrderVoList(List<Order> orderList, Integer userId) {
+        List<OrderVo> orderVoList = new ArrayList<>();
+        List<OrderItem> orderItemList = new ArrayList<>();
+        for (Order order : orderList) {
+            if (userId == null) {
+                //管理员查询
+                //返回所有用户的所有订单
+                orderItemList = orderItemMapper.getByOrderNo(order.getOrderNo());
+            } else {
+                //用户查询
+                //返回该用户的所有订单
+                orderItemList = orderItemMapper.getByOrderNoAndUserId(order.getOrderNo(), order.getUserId());
+            }
+            OrderVo orderVo = assembleOrderVo(order, orderItemList);
+            orderVoList.add(orderVo);
+        }
+
+        return orderVoList;
+    }
+
+    /**
+     *  后台侧
+     */
+
+    /**
+     * 查看所有订单
+     */
+    public ServerResponse<PageInfo> manageList(int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+
+        List<Order> orderList = orderMapper.selectAll();
+        List<OrderVo> orderVoList = assembleOrderVoList(orderList, null);
+
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    /**
+     * 管理员查看订单详情
+     */
+    public ServerResponse<OrderVo> manageDetail(Long orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            return ServerResponse.createByErrorMessage("无此订单");
+        }
+        //组装OrderVo
+        List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(orderNo);
+        OrderVo orderVo = assembleOrderVo(order, orderItemList);
+        return ServerResponse.createBySuccess(orderVo);
+    }
+
+    /**
+     * 管理员根据订单号查找订单
+     * 需要分页
+     * TODO 目前是精确匹配，后期应改为模糊查询，可按手机号、收货地址等多条件匹配
+     */
+    public ServerResponse<PageInfo> manageSearch(Long orderNo, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            return ServerResponse.createByErrorMessage("无此订单");
+        }
+        //组装OrderVo
+        List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(orderNo);
+        OrderVo orderVo = assembleOrderVo(order, orderItemList);
+
+        PageInfo pageInfo = new PageInfo(Lists.newArrayList(order));
+        pageInfo.setList(Lists.newArrayList(orderVo));
+
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    /**
+     * 根据订单号发货
+     */
+    public ServerResponse manageSendGoods(Long orderNo) {
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            return ServerResponse.createByErrorMessage("无此订单");
+        }
+        if (order.getStatus() != Const.OrderStatusEnum.PAID.getCode()) {
+            return ServerResponse.createByErrorMessage("订单状态不正确，不能发货");
+        }
+        Order newOrder = new Order();
+        newOrder.setId(order.getId());
+        newOrder.setSendTime(new Date());
+        newOrder.setStatus(Const.OrderStatusEnum.SHIPPED.getCode());
+        orderMapper.updateByPrimaryKeySelective(newOrder);
+        return ServerResponse.createBySuccessMessage("发货成功");
+    }
+
 }
